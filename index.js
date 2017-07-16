@@ -2,7 +2,6 @@
 'use strict';
 
 const metal = require('broccoli-metal');
-const Funnel = require('broccoli-funnel');
 const mergeTrees = require('broccoli-merge-trees');
 const replace = require('broccoli-string-replace');
 const stew = require('broccoli-stew');
@@ -15,7 +14,7 @@ module.exports = {
     return metal(tree, (files) => {
       var startIndex, endIndex, startDefine, endDefine;
       Object.keys(files).forEach((key) => {
-        // inside the makeImmutable function we tag the obj so Ember won't try to mutate it
+        // tags obj as __defineNonEnumerable to avoid "object is not extensible" exception
         startIndex = files[key].indexOf('addImmutabilityTag(obj)');
         if (startIndex !== -1) {
           endIndex = startIndex + 23;
@@ -23,7 +22,7 @@ module.exports = {
           var afterIndex = files[key].slice(endIndex + 1, files[key].length - 1);
           files[key] = `${beforeIndex}\n\naddPropertyTo(obj, '__defineNonEnumerable', function(){});\n\n${afterIndex}`;
         }
-        // alter how seamless-immutable loads to play nice with ember-cli AMD like define
+        // alter how seamless-immutable loads to play nice with ember-cli
         startDefine = files[key].indexOf('define(function () {\n');
         if (startDefine !== -1) {
           endDefine = startDefine + 50;
