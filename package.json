@@ -1,6 +1,6 @@
 {
   "name": "ember-cli-seamless-immutable-shim",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "seamless-immutable shim for ember-cli",
   "keywords": [
     "ember-addon",
