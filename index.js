@@ -13,8 +13,9 @@ module.exports = {
 
   importEmberStuff (tree) {
     return metal(tree, (files) => {
-      var startIndex, endIndex;
+      var startIndex, endIndex, startDefine, endDefine;
       Object.keys(files).forEach((key) => {
+        // inside the makeImmutable function we tag the obj so Ember won't try to mutate it
         startIndex = files[key].indexOf('addImmutabilityTag(obj)');
         if (startIndex !== -1) {
           endIndex = startIndex + 23;
@@ -22,24 +23,15 @@ module.exports = {
           var afterIndex = files[key].slice(endIndex + 1, files[key].length - 1);
           files[key] = `${beforeIndex}\n\naddPropertyTo(obj, '__defineNonEnumerable', function(){});\n\n${afterIndex}`;
         }
+        // alter how seamless-immutable loads to play nice with ember-cli AMD like define
+        startDefine = files[key].indexOf('define(function () {\n');
+        if (startDefine !== -1) {
+          endDefine = startDefine + 50;
+          var beforeDefine = files[key].slice(0, startDefine);
+          var afterDefine = files[key].slice(endDefine + 1, files[key].length);
+          files[key] = `define.amd=true;${beforeDefine}\n\nexports['default'] = Immutable;return Immutable;\n\n${afterDefine}\n\n`;
+        }
       });
-    });
-  },
-
-  shimAMD (tree, nameMapping) {
-    return stew.map(tree, function(content, relativePath) {
-      const name = nameMapping[relativePath];
-      if (name) {
-        return [
-          '(function(define){\n',
-          content,
-          '\n})((function(){ function newDefine(){ var args = Array.prototype.slice.call(arguments); args.unshift("',
-          name,
-          '"); return define.apply(null, args); }; newDefine.amd = true; return newDefine; })());'
-        ].join('');
-      } else {
-        return content;
-      }
     });
   },
 
@@ -66,15 +58,12 @@ module.exports = {
     });
 
     const seamlessTreeWithEmberMagic = this.importEmberStuff(seamlessTree);
-    const seamlessTreeWithEmberStuff = this.shimAMD(seamlessTreeWithEmberMagic, {
-      'index.js': 'seamless-immutable'
-    });
 
     if (!tree) {
-      return this._super.treeForAddon.call(this, seamlessTreeWithEmberStuff);
+      return this._super.treeForAddon.call(this, seamlessTreeWithEmberMagic);
     }
 
-    const trees = mergeTrees([seamlessTreeWithEmberStuff, tree], {
+    const trees = mergeTrees([seamlessTreeWithEmberMagic, tree], {
       overwrite: true
     });
 

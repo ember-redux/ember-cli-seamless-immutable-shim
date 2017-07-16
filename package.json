@@ -1,17 +1,21 @@
 {
   "name": "ember-cli-seamless-immutable-shim",
-  "version": "0.1.0",
-  "description": "The default blueprint for ember-cli addons.",
+  "version": "0.2.0",
+  "description": "seamless-immutable shim for ember-cli",
   "keywords": [
-    "ember-addon"
+    "ember-addon",
+    "seamless-immutable"
   ],
   "license": "MIT",
-  "author": "",
+  "author": "Toran Billups (https://github.com/toranb)",
   "directories": {
     "doc": "doc",
     "test": "tests"
   },
-  "repository": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ember-redux/ember-cli-seamless-immutable-shim.git"
+  },
   "scripts": {
     "build": "ember build",
     "start": "ember server",
@@ -47,7 +51,7 @@
     "seamless-immutable": "^7.1.2"
   },
   "engines": {
-    "node": "^4.5 || 6.* || >= 7.*"
+    "node": ">= 4"
   },
   "ember-addon": {
     "configPath": "tests/dummy/config"
